@@ -1,0 +1,45 @@
+version: '3.9'
+
+
+services:
+  nginx:
+    image: nginx:1.21
+    ports:
+      - 82:80
+    volumes:
+      - ./src:/var/www/php
+      - ./.docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - php
+
+
+  php:
+    build: ./.docker/php
+    working_dir: /var/www/php
+    volumes:
+      - ./src:/var/www/php
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:10.6.8
+    volumes:
+      - vol-mariadb:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_USER: "myuser"
+      MYSQL_PASSWORD: "root"
+      MYSQL_DATABASE: "user"
+
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - mariadb:db
+    ports:
+      - 8182:80
+
+volumes:
+
+    vol-mariadb:
